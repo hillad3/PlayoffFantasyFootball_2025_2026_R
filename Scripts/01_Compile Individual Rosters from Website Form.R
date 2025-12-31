@@ -10,7 +10,7 @@
   library(logger)
   logger::log_layout(layout_glue_colors)
 
-  season <- "2024-2025"
+  season <- "2025-2026"
 
   directory <- "Individual Rosters"
 
@@ -22,7 +22,7 @@
 
   # exclude specific types of files
   roster_files <- roster_files[!str_detect(roster_files, "^Dummy Repex")]
-  excluded_files <- c("Test Roster 1.csv")
+  excluded_files <- NULL # c("Test Roster 1.csv") # comment this out if needed prior to playoffs
   roster_files <- roster_files[!(roster_files %in% excluded_files)]
 
   if(any(str_detect(roster_files, "xlsx$"))){
@@ -42,6 +42,11 @@
   errors <- 0
   for(r in seq_along(rosters)){
     print(roster_files[[r]])
+
+    if(any(is.na(rosters[[r]]$`Team Abbr`))){
+      log_error("1: There are duplicated NFL team names within a single roster")
+      errors <- errors + 1
+    }
     if(any(duplicated(rosters[[r]]$`Team Abbr`))){
       log_error("1: There are duplicated NFL team names within a single roster")
       errors <- errors + 1
