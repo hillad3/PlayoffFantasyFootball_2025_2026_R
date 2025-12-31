@@ -28,7 +28,7 @@ nflPlayerStatsUI <- function(id, dt_team_info_, playoff_teams_, playoff_year_){
               inputId = NS(id,"reg_or_post"),
               label = "Regular or Post Season:",
               choices = list("Regular","Post"),
-              selected = "Post"
+              selected = "Regular"
             ),
             selectInput(
               inputId = NS(id,"stat_type"),
