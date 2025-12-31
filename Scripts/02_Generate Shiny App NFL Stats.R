@@ -7,7 +7,7 @@ library(data.table)
 library(nflreadr)
 library(nflfastR)
 
-season_int <- 2024L
+season_int <- 2025L
 season_type <- c("REG","POST")
 season_teams <- c(
   "ARI","ATL","BAL","BUF","CAR",
@@ -20,10 +20,25 @@ season_teams <- c(
 )
 
 # update with final listing after last regular season game
-playoff_teams <- c("BAL","BUF","DEN","DET",
-                   "GB","HOU","KC","LA",
-                   "LAC","MIN","PHI","PIT",
-                   "TB","WAS")
+playoff_teams <- c(
+  "BAL",
+  "BUF",
+  "CAR",
+  "CHI",
+  "DEN",
+  "GB",
+  "HOU",
+  "JAX",
+  "LAC",
+  "LAR",
+  "NE",
+  "PHI",
+  "PIT",
+  "SEA",
+  "SF",
+  "TB"
+)
+
 
 get_team_info <- function(season_int_ = season_int){
   dt <- data.table::as.data.table(nflreadr::load_teams(current = TRUE))
@@ -41,11 +56,17 @@ get_rosters <- function(season_int_ = season_int){
   dt <- unique(dt[,.(position, player_id = gsis_id, player_name, team_abbr = team)])
 
   # full backs are no longer listed separately from running backs in 2024-2025 data
-  # dt[,position:=ifelse(position=="FB","RB",position)]
+  # dt[,position:=fifelse(position=="FB","RB",position)]
+
+  # remove any players that have an NA player_id; problematic for tracking rosters if this isn't done
+  dt <- dt[!is.na(player_id)]
 
   # this provides a space to add in specific edge players (such as punters that sometimes kick field goals)
-  dt <- dt[position %in% c('QB', 'RB', 'WR', 'TE','K') | player_id %in% c("00-0034941", "00-0035042")]
-  dt[,position:= ifelse(position=="P","K",position)]
+  dt <- dt[position %in% c('QB', 'RB', 'WR', 'TE','K') | player_id %in% c("00-0037091")]
+  dt[,position:= fifelse(position=="P","K",position)]
+
+  # reassign player positions if needed
+  dt[player_id == "00-0037091", position := "WR"]
 
   dt <- merge.data.table(dt, dt_team_info[,.(team_abbr, team_conf, team_division)], all.x = TRUE, by = c("team_abbr"))
   dt[,lookup_string := paste0(position,', ',team_abbr,': ',player_name,' (',team_division,', ID: ',player_id,')')]
@@ -57,7 +78,11 @@ get_pbp <- function(season_int_ = season_int,
                     season_type_ = season_type){
   dt <- data.table::as.data.table(nflfastR::load_pbp(seasons = season_int_))
   dt <- dt[season_type %in% season_type_]
-  dt[,season_type := ifelse(season_type=="REG","Regular", ifelse(season_type=="POST","Post","Error"))]
+  dt[,season_type := fcase(
+    season_type=="REG","Regular",
+    season_type=="POST","Post",
+    default="Error")
+  ]
   cols <- c(
     'game_id',
     'game_date',
@@ -188,14 +213,17 @@ get_bonus_stats <- function(dt = pbp, # use get_pbp()
   bonus <- merge.data.table(bonus, dt_rosters_[,.(player_id, position, player_name, team_conf, team_division, lookup_string)], all.x = TRUE, by = c("player_id"))
 
 
-  # remove expected instance of player out of normal position for 2024-2025
-  bonus <- bonus[!(player_id == "00-0037578" & week == 12),]
-  # remove expected instance of DB player receiving the ball and returning for a TD
-  bonus <- bonus[!(player_id == "00-0037129" & week == 18),]
+  # remove expected instance of player out of normal position for 2025-2026
+  bonus <- bonus[!(player_id == "00-0037253" & week == 4),]
+  bonus <- bonus[!(player_id == "00-0037253" & week == 13),]
+  bonus <- bonus[!(player_id == "00-0039000" & week == 17),]
 
 
   if(any(is.na(bonus$position))){
-    print(paste0("There were ", length(bonus$position[is.na(bonus$position)]), " rows removed because of NAs in position"))
+    print(paste0("There were ", length(bonus$position[is.na(bonus$position)]),
+                 " rows removed from get_bonus_stats() because of NAs in position. This often means a player_id needs to",
+                 " be added to the exceptions in get_rosters because they played out of a normal",
+                 " position, but typically then are then removedd in the step just above this line."))
     bonus <- bonus[!is.na(position)]
     stop()
   }
@@ -311,7 +339,7 @@ get_defense_stats <- function(dt = pbp,
 
 
   # OLD methodology: calculate points allowed for each team. This includes when defense isn't on
-  # the field, but it now used to verify new methodology, and determine instances where no scores
+  # the field, but it is now used to verify new methodology, and determine instances where no scores
   # were made by a team
   tmp_total_points_allowed_summary1 <- rbindlist(list(
     unique(dt[,.(week, season_type, team_abbr = home_team, football_values = away_score)]),
@@ -370,7 +398,9 @@ get_defense_stats <- function(dt = pbp,
 
   tmp4 <- dt[
     str_detect(desc,"TWO-POINT CONVERSION ATTEMPT") &
-    str_detect(desc,"ATTEMPT SUCCEEDS") # &
+    str_detect(desc,"ATTEMPT SUCCEEDS") &
+    !is.na(two_point_conv_result) &
+    !str_detect(two_point_conv_result, "failure")
     # play_type != "no_play" # this needed to be removed to ensure that the superbowl LIX was correct; didn't seem to affect any previous games
   ]
   tmp4 <- tmp4[,.(week,season_type, scoring_team = posteam, other_team = defteam, desc)]
@@ -497,25 +527,13 @@ get_player_stats <- function(player_type_char, # either 'offense' or 'kicking'
                              dt_rosters_ = dt_rosters,
                              dt_team_info_ = dt_team_info){
   # create data.table for players, which is a combination of the offensive scorers plus kickers
-  dt <- data.table::as.data.table(nflreadr::load_player_stats(seasons = season_int_, stat_type = player_type_char))
+  dt <- data.table::as.data.table(nflreadr::load_player_stats(seasons = season_int_))
   dt <- dt[season_type %in% season_type_]
-  dt[,season_type := ifelse(season_type=="REG","Regular", ifelse(season_type=="POST","Post", "Error"))]
-  if(player_type_char == 'offense'){setnames(dt, old=c('recent_team'), new=c('team_abbr'))}
-  if(player_type_char == 'kicking'){setnames(dt, old=c('team'), new=c('team_abbr'))}
+  dt <- dt[!is.na(player_id)] # these are team statistics that shouldn't be applicable
+  dt[,season_type := fifelse(season_type=="REG","Regular", fifelse(season_type=="POST","Post", "Error"))]
+  setnames(dt, old=c('team'), new=c('team_abbr'))
 
-
-  if(player_type_char=='offense'){
-    dt <- dt[position %in% c('QB', 'RB', 'FB', 'WR', 'TE')]
-
-    # not required for 2024-2025 season
-    dt[,position := ifelse(position == 'FB', 'RB', position)]
-  }
-
-  if(player_type_char=='kicking'){dt[,position := 'K']} # position is not in the original dataset
-
-  if(player_type_char=='kicking'){dt[,fg_made_50_ := fg_made_50_59 + fg_made_60_]}
-
-  # drop these and bring in from dt_rosters
+  # drop these and bring in from dt_rosters next
   dt[,player_name:=NULL]
   dt[,position:=NULL]
 
@@ -529,6 +547,43 @@ get_player_stats <- function(player_type_char, # either 'offense' or 'kicking'
                          all.x = TRUE,
                          by = c("team_abbr"))
 
+
+  if(player_type_char == "offense"){
+    dt <- dt[position %in% c('QB', 'RB', 'FB', 'WR', 'TE')]
+    dt[,position := fifelse(position == 'FB', 'RB', position)] # not required as of 2024-2025 season
+
+    stat_cols <- c(
+      'passing_yards',
+      'passing_tds',
+      'rushing_yards',
+      'rushing_tds',
+      'receiving_yards',
+      'receiving_tds',
+      'passing_interceptions',
+      'sack_fumbles_lost',
+      'rushing_fumbles_lost',
+      'receiving_fumbles_lost',
+      'passing_2pt_conversions',
+      'rushing_2pt_conversions',
+      'receiving_2pt_conversions'
+    )
+  }
+
+  if(player_type_char == 'kicking'){
+    dt <- dt[position %in% c('K')]
+    dt[,fg_made_50_ := fg_made_50_59 + fg_made_60_]
+
+    stat_cols <- c(
+      'fg_made',
+      'fg_made_40_49',
+      'fg_made_50_',
+      'fg_missed',
+      'fg_blocked',
+      'pat_made',
+      'pat_missed'
+    )
+  }
+
   standard_cols <- c(
     'position',
     'week',
@@ -541,33 +596,6 @@ get_player_stats <- function(player_type_char, # either 'offense' or 'kicking'
     'team_division'
   )
 
-  if(player_type_char=='offense'){
-    stat_cols <- c(
-      'passing_yards',
-      'passing_tds',
-      'rushing_yards',
-      'rushing_tds',
-      'receiving_yards',
-      'receiving_tds',
-      'interceptions',
-      'sack_fumbles_lost',
-      'rushing_fumbles_lost',
-      'receiving_fumbles_lost',
-      'passing_2pt_conversions',
-      'rushing_2pt_conversions',
-      'receiving_2pt_conversions'
-    )
-  } else if(player_type_char=='kicking'){
-    stat_cols <- c(
-      'fg_made',
-      'fg_made_40_49',
-      'fg_made_50_',
-      'fg_missed',
-      'fg_blocked',
-      'pat_made',
-      'pat_missed'
-    )
-  }
   dt <- dt[, .SD, .SDcols = c(standard_cols, stat_cols)] # order cols
 
   # change data types to double prior to melting
@@ -635,7 +663,7 @@ combine_stats <- function(dt_rosters_ = dt_rosters){
   dt <- rbindlist(list(
     get_player_stats(player_type_char='offense'),
     get_player_stats(player_type_char='kicking'),
-    get_bonus_stats(pbp),
+    get_bonus_stats(dt = pbp),
     get_defense_stats(pbp)
   ))
 
@@ -676,7 +704,7 @@ combine_stats <- function(dt_rosters_ = dt_rosters){
 
   # drop the player name from stats, since there are potential discrepancies
   # depending on what first initial they were born with vs what they use professional
-  # also note that lookup_string joind from dt_rosters will bring in the current team, not necessarily
+  # also note that lookup_string joined from dt_rosters will bring in the current team, not necessarily
   # the team that the player is on when the stat occurred in the past
   dt <- merge.data.table(
     dt,
@@ -689,7 +717,7 @@ combine_stats <- function(dt_rosters_ = dt_rosters){
     tmp <- unique((dt[position!="Defense"][,.(player_name.x,player_name.y,player_id)]))
     stop("There are N/As in the player name")
   } else {
-    dt[,player_name:=ifelse(position=="Defense",player_name.x,player_name.y)]
+    dt[,player_name:=fifelse(position=="Defense",player_name.x,player_name.y)]
     dt[,player_name.x:=NULL]
     dt[,player_name.y:=NULL]
   }
@@ -704,7 +732,7 @@ combine_stats <- function(dt_rosters_ = dt_rosters){
   }
 
   # create the lookup_string that will be used in the dashboard filters
-  dt[,lookup_string:=ifelse(position=="Defense",paste0(position,", ",team_abbr," (",team_division,")"),lookup_string)]
+  dt[,lookup_string:=fifelse(position=="Defense",paste0(position,", ",team_abbr," (",team_division,")"),lookup_string)]
 
   if(any(is.na(dt$lookup_string))){
     stop("NAs in lookup_string")
@@ -741,9 +769,10 @@ dt_stats <- combine_stats()
 # remove zero value statistics
 # TODO this may or may not be a good idea for the stats but makes data set smaller for web loading
 dt_stats <- dt_stats[abs(stat_values) >= 1e-7]
+
 dt_stats <- dt_stats[team_abbr %in% playoff_teams]
 
-# get a list of unique players and teams for the lookup
+# get a list of unique players and teams for the roster lookup
 team_lookupstring_position <- rbindlist(list(
   setorder(dt_rosters[team_abbr %in% playoff_teams][,.(position, lookup_string, team_abbr)], lookup_string),
   dt_team_info[team_abbr %in% playoff_teams,.(position, lookup_string, team_abbr)]
