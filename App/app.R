@@ -9,6 +9,7 @@ library(DT)
 library(shinyjs)
 library(shinythemes)
 library(shinyWidgets)
+library(shinyvalidate)
 library(ggplot2)
 library(plotly)
 library(lpSolve)
@@ -16,7 +17,7 @@ library(lpSolve)
 source("helperFuncs.R")
 source("perfectLineupMod.R")
 source("howToPlayFunc.R")
-source("rosterBuilderMod.R")
+source("rosterBuilderMod_v2.R")
 source("nflPlayerStatsMod.R")
 source("fantasyResultsByRosterMod.R")
 source("fantasyResultsByPlayerMod.R")
@@ -24,7 +25,7 @@ source("additionalAnalysisMod.R")
 source("bracketCreatorMod.R")
 
 
-playoff_year <- 2024L
+playoff_year <- 2025L
 # season_type <- c("REG","POST")
 season_teams <- c(
   "ARI","ATL","BAL","BUF","CAR",
@@ -79,6 +80,7 @@ dt_stats <- fread(get_last_csv("stats"))
 
 team_lookupstring_position <- fread(get_last_csv("lookups"))
 
+# ensure at least an empty table with headers is in this file
 dt_scores <- fread(get_last_csv("NFL Fantasy Scores"))
 
 # just a placeholder until actual post season scores are available
@@ -126,7 +128,7 @@ dt_fantasy_rosters <- merge(
 )
 dt_fantasy_rosters[,position_code:=ifelse(position_code=="D","Defense",position_code)]
 dt_fantasy_rosters[,position_code:=factor(position_code, c("QB1","QB2","QB3","RB1","RB2","RB3","RB4","WR1","WR2","WR3","WR4","TE1","TE2","TE3","K","Defense"))]
-setorder(dt_fantasy_rosters, fantasy_team_and_initials,position_code,player_name)
+setorder(dt_fantasy_rosters, fantasy_team_and_initials, position_code, player_name)
 
 summary_by_team <- dt_fantasy_rosters |>
   distinct(fantasy_team_and_initials) |>
@@ -192,7 +194,7 @@ inactivity <- "function idleTimer() {
 idleTimer();"
 
 
-last_refresh <- "2/10/2025 7:00AM"
+last_refresh <- "12/30/2025 11:43PM"
 
 
 ui <- fluidPage(
@@ -203,51 +205,51 @@ ui <- fluidPage(
     tags$title("Tom's Playoff Fantasy Football League")
   ),
   tags$h1("Tom's Playoff Fantasy Football League", style = "text-align:center; margin-bottom:0px"),
-  tags$h3("(2024-2025)", style = "text-align:center; margin-top:0px"),
+  tags$h3("(2025-2026)", style = "text-align:center; margin-top:0px"),
   tags$p("This web page will close automatically if idle for 15 minutes. If you are building a roster, you will lose unsaved work.", style="font-size:75%; text-align:center"),
   tabsetPanel(
+    tabPanel(
+      "Rules & Scoring",
+      fluidPage(howToPlayUIonly())
+    ),
     # TODO uncomment this code when needed for creating rosters
     tabPanel(
       "Build Roster",
       buildRosterUI("b_r", team_lookupstring_position)
     ),
-    tabPanel(
-      "Fantasy Results",
-      br(),
-      tabsetPanel(
-        type = "pills",
-        tabPanel(
-          "By Roster",
-          br(),
-          #tags$h4("Today's scores expected to be updated ~7AM the next day."),
-          tags$h4("Week 4 should be final."),
-          tags$p(paste0("Scores last refreshed: ",last_refresh)),
-          fantasyResultsbyRosterUI("by_roster", summary_by_team)
-        ),
-        tabPanel(
-          "By Player",
-          br(),
-          fantasyResultsbyPlayerUI("by_player", dt_team_info, playoff_teams, playoff_year)
-        ),
-        tabPanel(
-          "Perfect Lineup",
-          perfectLineupUI("perf", dt_stats)
-        ),
-        tabPanel(
-          "Additional Analysis",
-          additionalAnalysisUI("a_a")
-        ),
-        tabPanel(
-          "Playoff Bracket",
-          br(),
-          bracketCreatorUI("b_c")
-        ),
-        tabPanel(
-          "Rules & Scoring",
-          fluidPage(howToPlayUIonly())
-        ),
-      )
-    ),
+    # tabPanel(
+    #   "Playoff Bracket",
+    #   br(),
+    #   bracketCreatorUI("b_c")
+    # ),
+    # tabPanel(
+    #   "Fantasy Results",
+    #   br(),
+    #   tabsetPanel(
+    #     type = "pills",
+    #     tabPanel(
+    #       "By Roster",
+    #       br(),
+    #       #tags$h4("Today's scores expected to be updated ~7AM the next day."),
+    #       tags$h4("Week 4 should be final."),
+    #       tags$p(paste0("Scores last refreshed: ",last_refresh)),
+    #       fantasyResultsbyRosterUI("by_roster", summary_by_team)
+    #     ),
+    #     tabPanel(
+    #       "By Player",
+    #       br(),
+    #       fantasyResultsbyPlayerUI("by_player", dt_team_info, playoff_teams, playoff_year)
+    #     ),
+    #     tabPanel(
+    #       "Perfect Lineup",
+    #       perfectLineupUI("perf", dt_stats)
+    #     ),
+    #     tabPanel(
+    #       "Additional Analysis",
+    #       additionalAnalysisUI("a_a")
+    #     )
+    #   )
+    # ),
     tabPanel(
       "NFL Player Stats",
       nflPlayerStatsUI("nfl_ps", dt_team_info, playoff_teams, playoff_year)
@@ -257,7 +259,7 @@ ui <- fluidPage(
       p(),
       tags$span("If you are interested in the details behind this R Shiny Dashboard, "),
       tags$span("scripts are available on my "),
-      tags$a(href="https://github.com/hillad3/PlayoffFantasyFootball_2024_2025_R", "github", .noWS="after"),
+      tags$a(href="https://github.com/hillad3/PlayoffFantasyFootball_2025_2026_R", "github", .noWS="after"),
       tags$span("."),
     )
   )
@@ -265,17 +267,17 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  # by roster sub-tab
-  fantasyResultsbyRosterServer("by_roster", summary_by_team, summary_by_team_and_player)
-
-  # by player sub-tab
-  fantasyResultsbyPlayerServer("by_player", dt_stats, dt_team_info, playoff_teams)
-
-  # perfect_lineup sub-tab
-  perfectLineupServer("perf", dt_stats, playoff_teams)
-
-  # additional analysis sub-tab
-  additionalAnalysisServer("a_a", dt_fantasy_rosters)
+  # # by roster sub-tab
+  # fantasyResultsbyRosterServer("by_roster", summary_by_team, summary_by_team_and_player)
+  #
+  # # by player sub-tab
+  # fantasyResultsbyPlayerServer("by_player", dt_stats, dt_team_info, playoff_teams)
+  #
+  # # perfect_lineup sub-tab
+  # perfectLineupServer("perf", dt_stats, playoff_teams)
+  #
+  # # additional analysis sub-tab
+  # additionalAnalysisServer("a_a", dt_fantasy_rosters)
 
   # explore stats tab
   nflPlayerStatsServer("nfl_ps", dt_stats, dt_team_info, playoff_teams)
@@ -283,8 +285,8 @@ server <- function(input, output, session) {
   # TODO this section is for Roster Selection; uncomment to make active
   buildRosterServer("b_r", team_lookupstring_position)
 
-  # this section creates the playoff bracket in a ggplot display
-  bracketCreatorServer("b_c", playoff_standings)
+  # # this section creates the playoff bracket in a ggplot display
+  # bracketCreatorServer("b_c", playoff_standings)
 
 
   ##### this handles the timeout_counter
