@@ -19,7 +19,7 @@ howToPlayUIonly <- function(){
       ),
       tags$li("The roster will be locked from changes after submission to the Commissioner."),
       tags$ul(
-        tags$li("Rosters must be submitted, valid, and paid for by kickoff of the first wildcard game (1pm Saturday, January 11th, 2025)."),
+        tags$li("Rosters must be submitted, valid, and paid for by kickoff of the first wildcard game (1pm Saturday, January 10th, 2026)."),
         tags$li("Late rosters will not be accepted."),
         tags$li("Multiple rosters are allowed per Owner, as long as each are paid for.")
       ),
@@ -38,23 +38,24 @@ howToPlayUIonly <- function(){
       tags$li("The Commissioner will (probably) provide weekly updates on Fantasy Team standings throughout the contest. Final summary of scoring and standings will be provided.")
     ),
     tags$h2("How To Use this Dashboard"),
-    tags$p("You can use this dashboard to explore player statistics and create your roster:"),
+    tags$p("You must use this dashboard to create your roster and, optionally, you can explore player statistics:"),
     tags$ul(
       tags$li("Regular season statistics are available on the 'Player Stats' tab, which may help provide insights on each player you should prioritize. Statistics are available in 'football values' and in 'fantasy points'."),
       tags$li("Use the 'Build Roster' tab on this dashboard to start creating your roster."),
       tags$li("Add players to your roster based on the combination you think will score the most points by the end of the Superbowl."),
-      tags$li("When a player is added to your roster, the team associated with that player (and any of its remaining players) will be removed from your next possible selections. For example: if you pick Jalen Hurts as one of your quarterbacks, you no longer be able to select an Eagles player on your roster."),
-      tags$li("When you've satisified the maximum number of positions on your roster, any player associated with that position will be removed from your next possible selection. For example: if you pick Jalen Hurts as your third (and last) quarterback, you no longer be able to select a quarterback."),
+      tags$li("When a player is added to your roster, the team associated with that player (and any of its remaining players) will be removed from your next possible selections. For example: if you pick Jalen Hurts as one of your quarterbacks, you will no longer be able to select an Eagles player on your roster."),
+      tags$li("When you've satisified the maximum number of positions on your roster, any player associated with that position will be removed from your next possible selection. For example: if you pick Jalen Hurts as your third (and last) quarterback, you will no longer be able to select any more quarterback."),
       tags$li("As needed, you can remove players from your team, which will release that Team and/or Position as a next possible selection."),
       tags$li("You must include your Name, Email and Fantasy Team Name in the Participant Information Box. Don't forget to confirm that you've paid the Commish."),
       tags$li("The roster can only be downloaded after all parameters have been satisfied (that is, a completed roster of 14 players and the Participant Information box is filled in with valid information)."),
       tags$li(
         tags$span("NOTE:", style="font-weight:bold;"),
-        tags$span("This website will not save your rosters permanently. You must"),
-        tags$span("email the commissioner any downloaded CSV-file roster(s)", style="color:red; text-decoration:underline; font-weight:bold;"),
-        tags$span("which you want to use."),
-
-      )
+        tags$span("This website will not save your rosters permanently. ", style="font-weight:bold;"),
+        tags$span(" You must email the commissioner any downloaded CSV-file roster(s)", style="color:red; text-decoration:underline; font-weight:bold;"),
+        tags$span("which you want to submit.")
+      ),
+      tags$p(),
+      tags$li("This website will be updated periodically during the Playoffs with the Fantasy scores and rankings, typically the morning after a game.")
     ),
     tags$h2("Scoring"),
     tags$h4("Passing"),
