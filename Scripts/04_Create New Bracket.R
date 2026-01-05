@@ -19,7 +19,7 @@ playoff_standings <- tribble(
   "CHI", "NFC", 2,          12, 2,
   "PHI", "NFC", 3,          12, 5,
   "CAR", "NFC", 4,          12, 8,
-  "LAR", "NFC", 5,          12, 7,
+  "LA",  "NFC", 5,          12, 7,
   "SF",  "NFC", 6,          12, 4,
   "GB",  "NFC", 7,          12, 1
 ) |>
