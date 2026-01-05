@@ -111,8 +111,8 @@ filter_players_by_constraints <- function(dt, teams_selected, positions_selected
 
   dt <- dt[!(team_abbr %in% teams_selected)]
 
-  if ("Defense" %in% positions_selected) df <- dt[position != "Defense"]
-  if ("K" %in% positions_selected) dt <- dt[position != "K"]
+  if (sum(positions_selected == "Defense") >= 1) dt <- dt[position != "Defense"]
+  if (sum(positions_selected == "K") >= 1) dt <- dt[position != "K"]
   if (sum(positions_selected == "QB") >= 3) dt <- dt[position != "QB"]
 
   # for RB, TE and WR, need to consider the flex position when filtering
