@@ -17,6 +17,7 @@ library(shinyvalidate)
 library(ggplot2)
 library(plotly)
 library(lpSolve)
+library(png)
 
 source("helperFuncs.R")
 source("perfectLineupMod.R")
@@ -26,8 +27,10 @@ source("nflPlayerStatsMod.R")
 source("fantasyResultsByRosterMod.R")
 source("fantasyResultsByPlayerMod.R")
 source("additionalAnalysisMod.R")
-source("bracketCreatorMod.R")
 
+# this is important for getting the png file loaded within the UI later,
+# since the data folder isn't available by default for img()
+addResourcePath("data", "data")
 
 playoff_year <- 2025L
 # season_type <- c("REG","POST")
@@ -41,51 +44,34 @@ season_teams <- c(
   "TEN","WAS"
 )
 
-playoff_standings <- tribble(
-  ~team, ~conf, ~conf_rank, ~x, ~y,
-  "DEN",  "AFC", 1,          0,  10,
-  "NE", "AFC", 2,          0,  2,
-  "JAX", "AFC", 3,          0,  5,
-  "PIT", "AFC", 4,          0,  8,
-  "HOU", "AFC", 5,          0,  7,
-  "LAC", "AFC", 6,          0,  4,
-  "BUF", "AFC", 7,          0,  1,
-  "SEA", "NFC", 1,          12, 10,
-  "CHI", "NFC", 2,          12, 2,
-  "PHI",  "NFC", 3,          12, 8,
-  "CAR",  "NFC", 4,          12, 5,
-  "SF", "NFC", 5,          12, 4,
-  "LAR", "NFC", 6,          12, 7,
-  "GB",  "NFC", 7,          12, 1
-) |>
-  as.data.table()
-
-if(length(playoff_standings[conf=="AFC"]$team)!=7L){
-  stop("There is an issue with the number of AFC teams")
-}
-if(!all(playoff_standings[conf=="AFC"]$conf_rank %in% 1:7)){
-  stop("The ranking of AFC teams is incomplete")
-}
-if(length(playoff_standings[conf=="NFC"]$team)!=7L){
-  stop("There is an issue with the number of NFC teams")
-}
-if(!all(playoff_standings[conf=="NFC"]$conf_rank %in% 1:7)){
-  stop("The ranking of NFC teams is incomplete")
-}
-
-playoff_teams <- playoff_standings$team
+playoff_teams <- c(
+  "DEN",
+  "NE",
+  "JAX",
+  "PIT",
+  "HOU",
+  "LAC",
+  "BUF",
+  "SEA",
+  "CHI",
+  "PHI",
+  "CAR",
+  "SF",
+  "LAR",
+  "GB"
+)
 
 
-dt_team_info <- fread(get_last_csv("team_info"))
+dt_team_info <- fread(get_last_data("team_info"))
 
-dt_nfl_rosters <- fread(get_last_csv("rosters"))
+dt_nfl_rosters <- fread(get_last_data("rosters"))
 
-dt_stats <- fread(get_last_csv("stats"))
+dt_stats <- fread(get_last_data("stats"))
 
-team_lookupstring_position <- fread(get_last_csv("lookups"))
+team_lookupstring_position <- fread(get_last_data("lookups"))
 
 # ensure at least an empty table with headers is in this file
-dt_scores <- fread(get_last_csv("NFL Fantasy Scores"))
+dt_scores <- fread(get_last_data("NFL Fantasy Scores"))
 
 # just a placeholder until actual post season scores are available
 if (dim(dt_scores)[1]==0L){
@@ -118,7 +104,7 @@ if (dim(dt_scores)[1]==0L){
 # this filtering was previously performed in the pipeline
 # dt_scores <- dt_scores[stat_type == "fantasy_points"]
 
-dt_fantasy_rosters <- fread(get_last_csv("Playoff Fantasy"))
+dt_fantasy_rosters <- fread(get_last_data("Playoff Fantasy"))
 if("Fantasy Owner Email" %in% names(dt_fantasy_rosters)){
   dt_fantasy_rosters[,`Fantasy Owner Email`:=NULL]
 }
@@ -222,10 +208,21 @@ ui <- fluidPage(
       buildRosterUI("b_r", team_lookupstring_position)
     ),
     tabPanel(
-      "Playoff Bracket",
-      br(),
-      bracketCreatorUI("b_c")
+      "Bracket",
+      tags$img(
+        src = get_last_data(key = "bracket", file_type = "png"),
+        style = "width: 100%; height: auto;"
+      )
     ),
+    # tabPanel(
+    #   "Bracket",
+    #   fluidPage(
+    #     tags$img(
+    #       src = png_bracket,
+    #       style = "width: 100%; height: auto;"
+    #     )
+    #   )
+    # ),
     # tabPanel(
     #   "Fantasy Results",
     #   br(),
@@ -288,9 +285,6 @@ server <- function(input, output, session) {
 
   # TODO this section is for Roster Selection; uncomment to make active
   buildRosterServer("b_r", team_lookupstring_position)
-
-  # # this section creates the playoff bracket in a ggplot display
-  bracketCreatorServer("b_c", playoff_standings)
 
 
   ##### this handles the timeout_counter
