@@ -39,19 +39,19 @@ season_teams <- c(
 
 playoff_standings <- tribble(
   ~team, ~conf, ~conf_rank, ~x, ~y,
-  "KC",  "AFC", 1,          0,  10,
-  "BUF", "AFC", 2,          0,  2,
-  "BAL", "AFC", 3,          0,  5,
-  "HOU", "AFC", 4,          0,  8,
-  "LAC", "AFC", 5,          0,  7,
-  "PIT", "AFC", 6,          0,  4,
-  "DEN", "AFC", 7,          0,  1,
-  "DET", "NFC", 1,          12, 10,
-  "PHI", "NFC", 2,          12, 2,
-  "TB",  "NFC", 3,          12, 8,
-  "LA",  "NFC", 4,          12, 5,
-  "MIN", "NFC", 5,          12, 4,
-  "WAS", "NFC", 6,          12, 7,
+  "DEN",  "AFC", 1,          0,  10,
+  "NE", "AFC", 2,          0,  2,
+  "JAX", "AFC", 3,          0,  5,
+  "PIT", "AFC", 4,          0,  8,
+  "HOU", "AFC", 5,          0,  7,
+  "LAC", "AFC", 6,          0,  4,
+  "BUF", "AFC", 7,          0,  1,
+  "SEA", "NFC", 1,          12, 10,
+  "CHI", "NFC", 2,          12, 2,
+  "PHI",  "NFC", 3,          12, 8,
+  "CAR",  "NFC", 4,          12, 5,
+  "SF", "NFC", 5,          12, 4,
+  "LAR", "NFC", 6,          12, 7,
   "GB",  "NFC", 7,          12, 1
 ) |>
   as.data.table()
@@ -217,11 +217,11 @@ ui <- fluidPage(
       "Build Roster",
       buildRosterUI("b_r", team_lookupstring_position)
     ),
-    # tabPanel(
-    #   "Playoff Bracket",
-    #   br(),
-    #   bracketCreatorUI("b_c")
-    # ),
+    tabPanel(
+      "Playoff Bracket",
+      br(),
+      bracketCreatorUI("b_c")
+    ),
     # tabPanel(
     #   "Fantasy Results",
     #   br(),
@@ -286,7 +286,7 @@ server <- function(input, output, session) {
   buildRosterServer("b_r", team_lookupstring_position)
 
   # # this section creates the playoff bracket in a ggplot display
-  # bracketCreatorServer("b_c", playoff_standings)
+  bracketCreatorServer("b_c", playoff_standings)
 
 
   ##### this handles the timeout_counter
