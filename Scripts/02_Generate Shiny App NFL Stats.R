@@ -21,7 +21,6 @@ season_teams <- c(
 
 # update with final listing after last regular season game
 playoff_teams <- c(
-  "BAL", # TBD
   "BUF",
   "CAR",
   "CHI",
@@ -30,10 +29,10 @@ playoff_teams <- c(
   "HOU",
   "JAX",
   "LAC",
-  "LAR",
+  "LA",
   "NE",
   "PHI",
-  "PIT", #TBD
+  "PIT",
   "SEA",
   "SF"
 )
