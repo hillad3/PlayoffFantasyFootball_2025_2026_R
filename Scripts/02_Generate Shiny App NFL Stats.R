@@ -2,7 +2,7 @@
 remove(list = ls())
 gc()
 
-library(tidyverse)
+library(stringr)
 library(data.table)
 library(nflreadr)
 library(nflfastR)
@@ -21,7 +21,7 @@ season_teams <- c(
 
 # update with final listing after last regular season game
 playoff_teams <- c(
-  "BAL",
+  "BAL", # TBD
   "BUF",
   "CAR",
   "CHI",
@@ -33,10 +33,9 @@ playoff_teams <- c(
   "LAR",
   "NE",
   "PHI",
-  "PIT",
+  "PIT", #TBD
   "SEA",
-  "SF",
-  "TB"
+  "SF"
 )
 
 
@@ -347,17 +346,17 @@ get_defense_stats <- function(dt = pbp,
   ))[,
      stat_label := "total_points_allowed_summary"
   ][,
-    fantasy_points := case_when(
-      football_values == 0L ~ 10L,
-      football_values >= 1L & football_values <= 6 ~ 7L,
-      football_values >= 7L & football_values <= 13 ~ 4L,
-      football_values >= 14L & football_values <= 17 ~ 1L,
-      football_values >= 18L & football_values <= 21 ~ 0L,
-      football_values >= 22L & football_values <= 27 ~ -1L,
-      football_values >= 28L & football_values <= 34 ~ -4L,
-      football_values >= 35L & football_values <= 45 ~ -7L,
-      football_values >= 46L ~ -10L,
-      .default = 0L
+    fantasy_points := fcase(
+      football_values == 0L, 10L,
+      football_values >= 1L & football_values <= 6, 7L,
+      football_values >= 7L & football_values <= 13, 4L,
+      football_values >= 14L & football_values <= 17, 1L,
+      football_values >= 18L & football_values <= 21, 0L,
+      football_values >= 22L & football_values <= 27, -1L,
+      football_values >= 28L & football_values <= 34, -4L,
+      football_values >= 35L & football_values <= 45, -7L,
+      football_values >= 46L, -10L,
+      default = 0L
     )
   ]
 
@@ -472,17 +471,17 @@ get_defense_stats <- function(dt = pbp,
       by=.(week, season_type, team_abbr = other_team),
       list(stat_label="def_points_allowed", football_values = sum(football_values))
     ][,
-      fantasy_points := case_when(
-        football_values == 0L ~ 10L,
-        football_values >= 1L & football_values <= 6 ~ 7L,
-        football_values >= 7L & football_values <= 13 ~ 4L,
-        football_values >= 14L & football_values <= 17 ~ 1L,
-        football_values >= 18L & football_values <= 21 ~ 0L,
-        football_values >= 22L & football_values <= 27 ~ -1L,
-        football_values >= 28L & football_values <= 34 ~ -4L,
-        football_values >= 35L & football_values <= 45 ~ -7L,
-        football_values >= 46L ~ -10L,
-        .default = 0L
+      fantasy_points := fcase(
+        football_values == 0L, 10L,
+        football_values >= 1L & football_values <= 6, 7L,
+        football_values >= 7L & football_values <= 13, 4L,
+        football_values >= 14L & football_values <= 17, 1L,
+        football_values >= 18L & football_values <= 21, 0L,
+        football_values >= 22L & football_values <= 27, -1L,
+        football_values >= 28L & football_values <= 34, -4L,
+        football_values >= 35L & football_values <= 45, -7L,
+        football_values >= 46L, -10L,
+        default = 0L
       )
     ]
 
@@ -612,24 +611,24 @@ get_player_stats <- function(player_type_char, # either 'offense' or 'kicking'
   )
 
   # calculate fantasy football points
-  dt[,fantasy_points := case_when(
-    stat_label == 'passing_yards' & football_values >= 400 ~ as.integer(football_values/50) + 2L,
-    stat_label == 'passing_yards' & football_values < 400 ~ as.integer(football_values/50),
-    stat_label == 'rushing_yards' & football_values >= 200 ~ as.integer(football_values/10L) + 2L,
-    stat_label == 'rushing_yards' & football_values < 200 ~ as.integer(football_values/10L),
-    stat_label == 'receiving_yards' & football_values >= 200 ~ as.integer(football_values/10L) + 2L,
-    stat_label == 'receiving_yards' & football_values < 200 ~ as.integer(football_values/10L),
-    stat_label %in% c('passing_tds', 'rushing_tds','receiving_tds') ~ as.integer(football_values) * 6L,
-    stat_label %in% c('passing_2pt_conversions', 'rushing_2pt_conversions','receiving_2pt_conversions') ~ as.integer(football_values) * 2L,
-    stat_label == 'interceptions' ~ as.integer(football_values) * -2L,
-    stat_label %in% c('sack_fumbles_lost', 'rushing_fumbles_lost', 'receiving_fumbles_lost') ~ as.integer(football_values) * -2L,
-    stat_label == 'fg_made' ~ as.integer(football_values) * 3L,
-    stat_label == 'fg_made_40_49' ~ as.integer(football_values) * 1L, # this is a bonus
-    stat_label == 'fg_made_50_' ~ as.integer(football_values) * 2L, # this is a bonus
-    stat_label == 'fg_missed' ~ as.integer(football_values) * -1L,
-    stat_label == 'pat_made' ~ as.integer(football_values) * 1L,
-    stat_label == 'pat_missed' ~ as.integer(football_values) * -1L,
-    .default = 0L
+  dt[,fantasy_points := fcase(
+    stat_label == 'passing_yards' & football_values >= 400, as.integer(football_values/50) + 2L,
+    stat_label == 'passing_yards' & football_values < 400, as.integer(football_values/50),
+    stat_label == 'rushing_yards' & football_values >= 200, as.integer(football_values/10L) + 2L,
+    stat_label == 'rushing_yards' & football_values < 200, as.integer(football_values/10L),
+    stat_label == 'receiving_yards' & football_values >= 200, as.integer(football_values/10L) + 2L,
+    stat_label == 'receiving_yards' & football_values < 200, as.integer(football_values/10L),
+    stat_label %in% c('passing_tds', 'rushing_tds','receiving_tds'), as.integer(football_values) * 6L,
+    stat_label %in% c('passing_2pt_conversions', 'rushing_2pt_conversions','receiving_2pt_conversions'), as.integer(football_values) * 2L,
+    stat_label == 'interceptions', as.integer(football_values) * -2L,
+    stat_label %in% c('sack_fumbles_lost', 'rushing_fumbles_lost', 'receiving_fumbles_lost'), as.integer(football_values) * -2L,
+    stat_label == 'fg_made', as.integer(football_values) * 3L,
+    stat_label == 'fg_made_40_49', as.integer(football_values) * 1L, # this is a bonus
+    stat_label == 'fg_made_50_', as.integer(football_values) * 2L, # this is a bonus
+    stat_label == 'fg_missed', as.integer(football_values) * -1L,
+    stat_label == 'pat_made', as.integer(football_values) * 1L,
+    stat_label == 'pat_missed', as.integer(football_values) * -1L,
+    default = 0L
   )]
 
   if(any(is.na(dt$position))){
@@ -772,11 +771,23 @@ dt_stats <- dt_stats[abs(stat_values) >= 1e-7]
 
 dt_stats <- dt_stats[team_abbr %in% playoff_teams]
 
+dt_stats_consol <- (dt_stats)[
+    stat_type == "fantasy_points" & season_type == "Regular"
+    ][,
+    .(reg_season_points = sum(stat_values)),
+    by = .(lookup_string)
+  ]
+
 # get a list of unique players and teams for the roster lookup
-team_lookupstring_position <- rbindlist(list(
-  setorder(dt_rosters[team_abbr %in% playoff_teams][,.(position, lookup_string, team_abbr)], lookup_string),
-  dt_team_info[team_abbr %in% playoff_teams,.(position, lookup_string, team_abbr)]
-))
+team_lookupstring_position <- merge.data.table(
+  x = rbindlist(list(
+    setorder(dt_rosters[team_abbr %in% playoff_teams][,.(position, lookup_string, team_abbr)], lookup_string),
+    dt_team_info[team_abbr %in% playoff_teams,.(position, lookup_string, team_abbr)]
+  )),
+  y = dt_stats_consol,
+  by = c("lookup_string"),
+  all.x = TRUE
+)
 
 
 dir <- "./App/data/"
