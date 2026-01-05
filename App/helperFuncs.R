@@ -390,24 +390,24 @@ update_app_stats <- function(dt,
 update_app_totals <- function(dt,
                              pos,
                              stat_teams){
-  
+
   if(!(pos %in% c("K","QB","RB","TE","WR","Defense","All"))){
     print(paste0(pos, " is not a valid position"))
   }
-  
+
   dt <- dt[season_type == "Post"]
   dt <- dt[stat_type=="fantasy_points"]
   if(pos != "All"){
     dt <- dt[position == pos]
   }
   dt <- dt[team_abbr %in% stat_teams]
-  
-  
+
+
   # this returns an empty data.table if there are no stats, which avoids an error when casting
   if(dim(dt)[1]==0L){
     return(dt)
   }
-  
+
   grouping_by <- c(
     'position',
     'week',
@@ -415,26 +415,26 @@ update_app_totals <- function(dt,
     'player_name',
     'team_abbr'
   )
-  
+
   dt <- dt[, by = grouping_by, .(stat_values = sum(stat_values))]
-    
+
   dt <- dcast(
     dt,
     position + team_abbr + player_name + player_id ~ week,
     value.var = c("stat_values"),
     fill = 0
   )
-  
+
   point_cols <- c("19","20","21","22")[c("19","20","21","22") %in% names(dt)]
   dt <- dt |>
-    group_by(player_id) |> 
-    mutate(fantasy_points = rowSums(across(where(is.numeric)))) |> 
-    ungroup() |> 
+    group_by(player_id) |>
+    mutate(fantasy_points = rowSums(across(where(is.numeric)))) |>
+    ungroup() |>
     as.data.table()
-  
+
   dt <- setorder(dt, -fantasy_points)
   dt[,player_id:=NULL]
-  
+
   possible_cols <-
     c(
       "position",
@@ -446,8 +446,8 @@ update_app_totals <- function(dt,
       "22",
       "fantasy_points"
     )
-  
-  new_names <- 
+
+  new_names <-
     c(
       "Position",
       "Team Abbr.",
@@ -458,13 +458,13 @@ update_app_totals <- function(dt,
       "Superbowl (Week 4)",
       "Total Points"
     )
-  
+
   new_names <- new_names[possible_cols %in% names(dt)]
-  
+
   setnames(dt, new = new_names)
-  
+
   return(dt)
-  
+
 }
 
 
@@ -490,11 +490,12 @@ count_positions <- function(x){
 }
 
 
-get_last_csv <- function(key){
-  # this funciton should get the latest csv file in the data folder
+get_last_data <- function(key, file_type = "csv"){
+  # this function should get the latest csv file (or other) in the data folder
   # provided it matches with the key provided
   f <- list.files(path = "data")
-  f <- f[str_detect(f, paste0("^",key))]
+  f <- f[str_starts(f, key)]
+  f <- f[str_ends(f, file_type)]
   d <- str_extract(f,"[:digit:]{4}-[:digit:]{2}-[:digit:]{2} [:digit:]{6}")
   f <- f[d == str_remove_all(as.character(max(as_datetime(d))),":")]
   return(paste0("data/",f))
