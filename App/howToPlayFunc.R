@@ -3,7 +3,7 @@ howToPlayUIonly <- function(){
     tags$h2("Game Overview"),
     tags$p("Playoff Fantasy Football is an elimination based version of Fantasy Football:"),
     tags$ul(
-      tags$li("Each contestant will create a diversified roster prior to the start of playoffs."),
+      tags$li("Each contestant must create a diversified roster (or multiple rosters) before the playoffs begin. Once the postseason starts, all submitted rosters are locked and cannot be changed."),
       tags$ul(
         tags$li("Your roster must include one player from each of the 14 teams in the playoffs."),
         tags$li("Your roster must include:"),
@@ -17,16 +17,13 @@ howToPlayUIonly <- function(){
           tags$li("1 Defense / Special Teams")
         ),
       ),
-      tags$li("The roster will be locked from changes after submission to the Commissioner."),
+      tags$li("Again, the roster will be locked from changes after submission to the Commissioner."),
       tags$ul(
         tags$li("Rosters must be submitted, valid, and paid for by kickoff of the first wildcard game (1pm Saturday, January 10th, 2026)."),
         tags$li("Late rosters will not be accepted."),
         tags$li("Multiple rosters are allowed per Owner, as long as each are paid for.")
       ),
-      tags$li("Each week, as teams are eliminated from the playoffs, so does the pool of potential players on your roster who can score points."),
-      tags$ul(
-        tags$li("Therefore, your overall roster success is as dependent on each player's longevity in the playoffs as much as it is on the player's performance.")
-      ),
+      tags$li("Every week, as teams are eliminated, the pool of scoring-eligible players on your roster shrinks. Winning requires not only picking high‑performing players, but also players who will last the longest in the postseason."),
       tags$li("Fantasy scoring is calculated based on each player's performance during a game."),
       tags$li("The types of statistics converted into Fantasy points is consistent with typical scoring rules (see details below)"),
       tags$li("Points are cumulative throughout the playoffs (including wildcard games and Super Bowl)."),
