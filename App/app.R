@@ -57,7 +57,7 @@ playoff_teams <- c(
   "PHI",
   "CAR",
   "SF",
-  "LAR",
+  "LA",
   "GB"
 )
 
