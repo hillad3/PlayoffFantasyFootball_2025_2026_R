@@ -2,7 +2,11 @@
 remove(list = ls())
 gc()
 
-library(tidyverse)
+library(stringr)
+library(lubridate)
+library(dplyr)
+library(forcats)
+library(purrr)
 library(shiny)
 library(data.table)
 library(DT)
