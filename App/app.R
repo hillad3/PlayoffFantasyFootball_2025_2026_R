@@ -204,7 +204,7 @@ ui <- fluidPage(
     ),
     # TODO uncomment this code when needed for creating rosters
     tabPanel(
-      "Build Roster",
+      "Roster Builder",
       buildRosterUI("b_r", team_lookupstring_position)
     ),
     tabPanel(
