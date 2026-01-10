@@ -3,7 +3,7 @@ howToPlayUIonly <- function(){
     tags$h2("Game Overview"),
     tags$p("Playoff Fantasy Football is an elimination based version of Fantasy Football:"),
     tags$ul(
-      tags$li("Each contestant must create a diversified roster (or multiple rosters) before the playoffs begin. Once the postseason starts, all submitted rosters are locked and cannot be changed."),
+      tags$li("Each contestant must create a diversified roster (or multiple rosters) before the playoffs begin (1pm Saturday, January 10th, 2026). Once the postseason starts, all submitted rosters are locked and cannot be changed. Multiple rosters are allowed per Owner, as long as each are paid for."),
       tags$ul(
         tags$li("Your roster must include one player from each of the 14 teams in the playoffs."),
         tags$li("Your roster must include:"),
@@ -17,41 +17,38 @@ howToPlayUIonly <- function(){
           tags$li("1 Defense / Special Teams")
         ),
       ),
-      tags$li("Again, the roster will be locked from changes after submission to the Commissioner."),
-      tags$ul(
-        tags$li("Rosters must be submitted, valid, and paid for by kickoff of the first wildcard game (1pm Saturday, January 10th, 2026)."),
-        tags$li("Late rosters will not be accepted."),
-        tags$li("Multiple rosters are allowed per Owner, as long as each are paid for.")
-      ),
+      tags$li(
+        tags$span("Fortunately, the Roster Builder tool will enforce these rules.", style = "font-weight:bold"),
+        tags$span("At this point, most people can probably stop reading... ")
+      )
+    ),
+    tags$h2("Game Play"),
+    tags$ul(
       tags$li("Every week, as teams are eliminated, the pool of scoring-eligible players on your roster shrinks. Winning requires not only picking high‑performing players, but also players who will last the longest in the postseason."),
       tags$li("Fantasy scoring is calculated based on each player's performance during a game."),
-      tags$li("The types of statistics converted into Fantasy points is consistent with typical scoring rules (see details below)"),
+      tags$li("The types of statistics converted into Fantasy points is consistent with typical scoring rules (see Scoring below)"),
       tags$li("Points are cumulative throughout the playoffs (including wildcard games and Super Bowl)."),
       tags$li("The person with the most points at the end of the playoffs wins the grand prize."),
       tags$li("Prizes will be awarded to the top 5 scoring entries."),
       tags$li("Prize purse will be announced after wildcard playoff weekend, since prize purse is dependent on the number of entries."),
       tags$li("If you think you're going to win, spread the word: The more participants, the larger the prizes."),
       tags$li("If you think you're going to lose, spread the word: Imagine the commaraderie of shared experience!"),
-      tags$li("The Commissioner will (probably) provide weekly updates on Fantasy Team standings throughout the contest. Final summary of scoring and standings will be provided.")
+      tags$li("The Commissioner will (probably) provide weekly updates on Fantasy Team standings throughout the contest.")
     ),
     tags$h2("How To Use this Dashboard"),
-    tags$p("You must use this dashboard to create your roster and, optionally, you can explore player statistics:"),
     tags$ul(
-      tags$li("Regular season statistics are available on the 'Player Stats' tab, which may help provide insights on each player you should prioritize. Statistics are available in 'football values' and in 'fantasy points'."),
-      tags$li("Use the 'Build Roster' tab on this dashboard to start creating your roster."),
+      tags$li("You must use this dashboard to create your roster. Use the 'Roster Builder' tab."),
       tags$li("Add players to your roster based on the combination you think will score the most points by the end of the Superbowl."),
       tags$li("When a player is added to your roster, the team associated with that player (and any of its remaining players) will be removed from your next possible selections. For example: if you pick Jalen Hurts as one of your quarterbacks, you will no longer be able to select an Eagles player on your roster."),
       tags$li("When you've satisified the maximum number of positions on your roster, any player associated with that position will be removed from your next possible selection. For example: if you pick Jalen Hurts as your third (and last) quarterback, you will no longer be able to select any more quarterback."),
       tags$li("As needed, you can remove players from your team, which will release that Team and/or Position as a next possible selection."),
-      tags$li("You must include your Name, Email and Fantasy Team Name in the Participant Information Box. Don't forget to confirm that you've paid the Commish."),
-      tags$li("The roster can only be downloaded after all parameters have been satisfied (that is, a completed roster of 14 players and the Participant Information box is filled in with valid information)."),
       tags$li(
         tags$span("NOTE:", style="font-weight:bold;"),
         tags$span("This website will not save your rosters permanently. ", style="font-weight:bold;"),
         tags$span(" You must email the commissioner any downloaded CSV-file roster(s)", style="color:red; text-decoration:underline; font-weight:bold;"),
         tags$span("which you want to submit.")
       ),
-      tags$p(),
+      tags$li("Regular season and postseason statistics based on our fantasy scoring system are available on the 'Player Stats' tab. Statistics are available in 'football values' and in 'fantasy points'."),
       tags$li("This website will be updated periodically during the Playoffs with the Fantasy scores and rankings, typically the morning after a game.")
     ),
     tags$h2("Scoring"),
